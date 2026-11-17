@@ -48,6 +48,29 @@ const MEETING_LINK = "https://your-booking-link";
 const MASCOT_SRC = "/mascot.png"; // Naavya mascot image
 const JMS_LOGO_SRC = "/jms-tech-logo.png"; // footer logo
 
+/* ---------- API & Integration Config ---------- */
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const AGENT_SLUG = "dealership";
+
+const VEHICLE_MAP = {
+  cars: "4 Wheeler",
+  two: "2 Wheeler",
+  cv: "Commercial",
+};
+
+const USE_CASE_MAP = {
+  sales: "Test Drive Booking",
+  service: "Service Reminder",
+  feedback: "Customer Feedback",
+  insurance: "Insurance Renewal",
+};
+
+const LANG_MAP = {
+  Gujarati: "gu-IN",
+  Hindi: "hi-IN",
+  English: "en-IN",
+};
+
 /* ---------- Styles ---------- */
 
 const pill = (on) => ({
@@ -74,14 +97,22 @@ export default function App() {
   const [brand, setBrand] = useState("Hyundai");
   const [use, setUse] = useState("service");
   const [lang, setLang] = useState("Hindi");
+  const [userName, setUserName] = useState("");
   const [dealer, setDealer] = useState("");
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
   const [error, setError] = useState("");
 
-  const pick = (setter) => (v) => { setter(v); setSent(false); };
+  const pick = (setter) => (v) => {
+    setter(v);
+    setSent(false);
+    setSuccessMsg("");
+    setError("");
+  };
 
   const from = dealer.trim()
     ? city.trim() ? `${dealer.trim()}, ${city.trim()}` : dealer.trim()
@@ -94,14 +125,70 @@ export default function App() {
     insurance: `The insurance on your ${brand} is due for renewal soon. May I share the renewal quote?`,
   };
   const useLabel = USES.find((u) => u.id === use).label;
+  const greeting = userName.trim() ? `Namaste ${userName.trim()}` : "Namaste";
 
-  const submit = () => {
-    if (!dealer.trim()) return setError("Enter your dealership name so the agent can use it on the call."), setSent(false);
-    if (phone.length !== 10) return setError("Enter a 10-digit mobile number."), setSent(false);
-    if (!consent) return setError("Tick the consent box to receive the demo call."), setSent(false);
+  const submit = async () => {
+    const cleanDigits = phone.replace(/\D/g, "");
+    if (!userName.trim()) {
+      setError("Please enter your name so the AI agent can address you.");
+      setSent(false);
+      return;
+    }
+    if (!dealer.trim()) {
+      setError("Please enter your dealership name so the agent can use it on the call.");
+      setSent(false);
+      return;
+    }
+    if (cleanDigits.length !== 10) {
+      setError("Please enter a valid 10-digit mobile number.");
+      setSent(false);
+      return;
+    }
+    if (!consent) {
+      setError("Please tick the consent box to receive the demo call.");
+      setSent(false);
+      return;
+    }
+
     setError("");
-    setSent(true);
-    // TODO: call your backend here (send OTP, then trigger the demo call)
+    setLoading(true);
+    setSent(false);
+    setSuccessMsg("");
+
+    const payload = {
+      vehicle_type: VEHICLE_MAP[seg] || "4 Wheeler",
+      brand: brand,
+      use_case: USE_CASE_MAP[use] || "Service Reminder",
+      language: LANG_MAP[lang] || "hi-IN",
+      dealership_name: dealer.trim(),
+      city: city.trim(),
+      phone: cleanDigits,
+      user_name: userName.trim(),
+      agent_slug: AGENT_SLUG,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sarvam/react-trigger-call/${AGENT_SLUG}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.status === "success") {
+        setSent(true);
+        setSuccessMsg(data.message || `Call initiated successfully to +91 ${cleanDigits}!`);
+      } else {
+        setError(data?.message || `Server returned error (${response.status}). Please check your backend.`);
+      }
+    } catch (err) {
+      setError(`Unable to connect to the backend server at ${API_BASE_URL}. Please ensure your backend is running.`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -201,12 +288,23 @@ export default function App() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
                 <div className="field">
+                  <label htmlFor="userName">Your name</label>
+                  <input
+                    id="userName"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="e.g. Ayushi Patel"
+                    value={userName}
+                    onChange={(e) => { setUserName(e.target.value); setSent(false); }}
+                  />
+                </div>
+                <div className="field">
                   <label htmlFor="dealer">Dealership name</label>
-                  <input id="dealer" type="text" autoComplete="organization" placeholder="e.g. ABC Motors" value={dealer} onChange={(e) => setDealer(e.target.value)} />
+                  <input id="dealer" type="text" autoComplete="organization" placeholder="e.g. ABC Motors" value={dealer} onChange={(e) => { setDealer(e.target.value); setSent(false); }} />
                 </div>
                 <div className="field">
                   <label htmlFor="city">City</label>
-                  <input id="city" type="text" autoComplete="address-level2" placeholder="e.g. Ahmedabad" value={city} onChange={(e) => setCity(e.target.value)} />
+                  <input id="city" type="text" autoComplete="address-level2" placeholder="e.g. Ahmedabad" value={city} onChange={(e) => { setCity(e.target.value); setSent(false); }} />
                 </div>
                 <div className="field">
                   <label htmlFor="phone">Mobile number (+91)</label>
@@ -229,9 +327,27 @@ export default function App() {
                 </p>
               )}
 
-              <button type="button" onClick={submit}
-                style={{ minHeight: 56, padding: "0 30px", borderRadius: 999, border: "none", background: C.amber, color: C.bg, fontWeight: 700, fontSize: 18, alignSelf: "flex-start" }}>
-                Verify with OTP and call me now
+              <button
+                type="button"
+                onClick={submit}
+                disabled={loading}
+                style={{
+                  minHeight: 56,
+                  padding: "0 30px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: loading ? "rgba(255,177,92,0.6)" : C.amber,
+                  color: C.bg,
+                  fontWeight: 700,
+                  fontSize: 18,
+                  alignSelf: "flex-start",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                {loading ? "Dialing AI Agent..." : "Call me now"}
               </button>
               <p style={{ margin: 0, fontSize: 13, color: C.muted }}>One demo call per verified number. Calls run for up to 90 seconds.</p>
             </div>
@@ -252,16 +368,16 @@ export default function App() {
               <div style={{ borderTop: "1px solid rgba(13,15,28,0.25)", paddingTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ margin: 0, fontSize: 13, color: "#4A4D5A" }}>How the call opens (shown in English, spoken in {lang})</p>
                 <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, fontWeight: 500 }}>
-                  “Namaste, this is Naavya calling from {from}. {lines[use]}”
+                  “{greeting}, this is Naavya calling from {from}. {lines[use]}”
                 </p>
               </div>
             </div>
 
             {sent && (
               <div role="status" style={{ background: "rgba(191,230,211,0.12)", border: "1px solid rgba(191,230,211,0.5)", borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#BFE6D3" }}>OTP sent to +91 {phone}</p>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#BFE6D3" }}>Call Triggered Successfully!</p>
                 <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5, color: "#BFE6D3" }}>
-                  Once verified, your phone rings within 30 seconds. A WhatsApp summary of the call follows right after.
+                  {successMsg || `Your phone (+91 ${phone}) will ring in a few seconds.`} A WhatsApp summary of the call follows right after.
                 </p>
               </div>
             )}
