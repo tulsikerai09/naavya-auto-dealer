@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap');
+.nv *{box-sizing:border-box}
+.nv{margin:0;font-family:'Instrument Sans','Noto Sans',system-ui,sans-serif;color:#F3EFE6;background:#0D0F1C;letter-spacing:-0.015em;line-height:1.5;width:100%}
+.nv button,.nv input{font:inherit;letter-spacing:inherit}
+.nv button{cursor:pointer}
+.nv a{color:#FFB15C}.nv a:hover{color:#FFD09A}
+.nv input::placeholder{color:rgba(243,239,230,0.6)}
+.nv input:focus-visible,.nv button:focus-visible,.nv a:focus-visible{outline:2px solid #F3EFE6;outline-offset:4px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
+.h2{margin:0;font-size:clamp(28px,3.6vw,40px);font-weight:600;letter-spacing:-0.025em}
+.panel{background:rgba(255,255,255,0.03);border:1px solid rgba(243,239,230,0.15);border-radius:20px;padding:24px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input[type=text],.field input[type=tel]{height:48px;padding:0 14px;border-radius:12px;border:1px solid rgba(243,239,230,0.45);font-size:16px;width:100%;background:rgba(255,255,255,0.06);color:#F3EFE6}
