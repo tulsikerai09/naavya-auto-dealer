@@ -28,7 +28,19 @@ const USES = [
   { id: "feedback", label: "Feedback", desc: "Post-service or post-delivery feedback" },
   { id: "insurance", label: "Insurance", desc: "Renewal reminder and quote" },
 ];
-const LANGS = ["Gujarati", "Hindi", "English"];
+const LANGS = [
+  "Bengali",
+  "English",
+  "Gujarati",
+  "Kannada",
+  "Malayalam",
+  "Marathi",
+  "Odia",
+  "Punjabi",
+  "Tamil",
+  "Telugu",
+  "Hindi",
+];
 
 const BENEFITS = [
   { title: "Live in 7 days", text: "Sales and service agents set up for your dealership and taking calls within a week." },
@@ -40,11 +52,18 @@ const PRICING = [
   { big: "₹6 per minute", sub: "Up to 10,000 minutes a month", text: "Pay only for the minutes your agents talk." },
   { big: "₹5 per minute", sub: "Above 10,000 minutes a month", text: "The lower rate applies to all minutes in that month." },
 ];
-const CLIENTS = ["[SKODA DEALER NAME, CITY]", "[HONDA TWO-WHEELER DEALER NAME]", "[YAMAHA DEALER NAME]", "[TVS DEALER NAME]"];
+const CLIENTS = [
+  "West Coast Kia",
+  "Param Mahindra",
+  "MG Hector",
+  "Royal Enfield",
+  "Honda Udaipur",
+  "Stellar Skoda",
+  "Hyundai",
+];
 
 /* ---------- Config: replace these ---------- */
-const SALES_WHATSAPP_LINK = "https://wa.me/91XXXXXXXXXX";
-const MEETING_LINK = "https://your-booking-link";
+const MEETING_LINK = "https://bookings.cloud.microsoft/book/BookaMeetingwithJMSConsultants@jmsadvisory.in/?ismsaljsauthenabled=true";
 const MASCOT_SRC = "/mascot.png"; // Naavya mascot image
 const JMS_LOGO_SRC = "/jms-tech-logo.png"; // footer logo
 
@@ -63,12 +82,6 @@ const USE_CASE_MAP = {
   service: "Service Reminder",
   feedback: "Customer Feedback",
   insurance: "Insurance Renewal",
-};
-
-const LANG_MAP = {
-  Gujarati: "gu-IN",
-  Hindi: "hi-IN",
-  English: "en-IN",
 };
 
 /* ---------- Styles ---------- */
@@ -159,7 +172,7 @@ export default function App() {
       vehicle_type: VEHICLE_MAP[seg] || "4 Wheeler",
       brand: brand,
       use_case: USE_CASE_MAP[use] || "Service Reminder",
-      language: LANG_MAP[lang] || "hi-IN",
+      language: lang,
       dealership_name: dealer.trim(),
       city: city.trim(),
       phone: cleanDigits,
@@ -205,10 +218,7 @@ export default function App() {
             </span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            <a href={SALES_WHATSAPP_LINK} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 20px", borderRadius: 999, border: "1px solid rgba(243,239,230,0.4)", fontWeight: 500, fontSize: 15, textDecoration: "none", color: C.cream }}>
-              Talk to Sales
-            </a>
-            <a href="#meeting" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 20px", borderRadius: 999, fontWeight: 600, fontSize: 15, textDecoration: "none", background: C.cream, color: C.bg }}>
+            <a href={MEETING_LINK} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 20px", borderRadius: 999, fontWeight: 600, fontSize: 15, textDecoration: "none", background: C.cream, color: C.bg }}>
               Book a meeting
             </a>
           </div>
@@ -284,7 +294,7 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              <p style={{ margin: 0, fontSize: 13, color: C.muted }}>Naavya AI works in 11 Indian languages. This demo runs in three.</p>
+              <p style={{ margin: 0, fontSize: 13, color: C.muted }}>Naavya AI works in 11 Indian languages. Select your preferred language for the demo call.</p>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
                 <div className="field">
@@ -446,7 +456,7 @@ export default function App() {
               A 15-minute meeting covers your call volumes, languages and go-live plan.
             </p>
           </div>
-          <a href={MEETING_LINK} style={{ display: "inline-flex", alignItems: "center", minHeight: 56, padding: "0 30px", borderRadius: 999, background: C.bg, color: C.cream, fontWeight: 600, fontSize: 17, textDecoration: "none" }}>
+          <a href={MEETING_LINK} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 56, padding: "0 30px", borderRadius: 999, background: C.bg, color: C.cream, fontWeight: 600, fontSize: 17, textDecoration: "none" }}>
             Book a meeting
           </a>
         </div>
